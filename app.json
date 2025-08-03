@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "budget-tracker-app",
+    "name": "Budget Tracker",
     "slug": "budget-tracker-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,19 +8,18 @@
     "scheme": "budgettrackerapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
+      "package": "com.bhuiyash.budgettrackerapp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
     },
+    "ios": {
+      "supportsTablet": true
+    },
     "web": {
-      "bundler": "metro",
-      "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -37,6 +36,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "fd7bbd90-9435-4be8-b0a3-3305f7830af7"
+      }
     }
   }
 }

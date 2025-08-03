@@ -1,50 +1,70 @@
-# Welcome to your Expo app 👋
+# 📊 Budget Tracker App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A simple and lightweight **budget tracking mobile app** built with **React Native** (using Expo) that allows you to log your daily expenses and store them directly in a connected **Google Sheet** via Apps Script API.
 
-## Get started
+---
 
-1. Install dependencies
+## ✨ Features
 
-   ```bash
-   npm install
-   ```
+- 📅 Add daily expenses with date, category, and amount  
+- ☁️ Save data directly to a Google Sheet  
+- 📱 Optimized for Android (APK supported)  
+- 🔐 No external database or login required  
+- 🧠 Built using React Native (Expo) with simple UI
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## 📸 Screenshots
 
-In the output, you'll find options to open the app in a
+*Coming soon*
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🚀 Tech Stack
 
-## Get a fresh project
+- **Frontend:** React Native (via [Expo](https://expo.dev/))  
+- **Backend:** Google Apps Script API  
+- **Storage:** Google Sheets  
+- **Build System:** EAS (Expo Application Services)
 
-When you're ready, run:
+---
+
+## 🛠️ Installation
+
+### 1. Clone the repository
+
+Create a new Google Sheet
+add three columns in row one as date, expense,amount
+
+Open App Script Editor (Extensions > Apps Script)
+remove the default empty funtion
+Add this code:
+
+
+function doPost(e) {
+  const data = JSON.parse(e.postData.contents);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
+  sheet.appendRow([data.date, data.expense, data.amount]);
+  return ContentService.createTextOutput("Success");
+}
+
+Deploy the script:
+Deploy > New Deployment > Web App
+
+Execute as: Me
+
+Who has access: Anyone --very important
+
+Click Deploy and copy the Web App URL
+
+Paste this endpoint into your index tsx 
 
 ```bash
-npm run reset-project
-```
+git clone https://github.com/your-username/budget-tracker-app.git
+cd budget-tracker-app
+npm install
+npx expo start
+npm install -g eas-cli
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Made with ❤️ by Bhuiyash Kumar
