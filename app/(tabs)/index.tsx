@@ -1,6 +1,7 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Button,
   Platform,
@@ -15,6 +16,7 @@ export default function HomeScreen() {
   const [showPicker, setShowPicker] = useState(false);
   const [expense, setExpense] = useState("");
   const [amount, setAmount] = useState("");
+  const [loading,setLoading]=useState(false);
 
     const handleSubmit = async () => {
     if (!expense || !amount || isNaN(Number(amount))) {
@@ -23,25 +25,26 @@ export default function HomeScreen() {
     }
 
     const formattedDate = date.toISOString().split("T")[0];
-
+    setLoading(true);
+    const expenseObj={
+          date: formattedDate,
+          expense: expense.trim(),
+          amount: amount.trim(),
+        };
     try {
-      const res = await fetch("your google api url", {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbw7411FrzL256DaqqWZZkrpEWQYga23S_XzWKDNHOtBbrFMnz1_XrgSteq_-5GLTCSj/exec", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          date: formattedDate,
-          expense: expense.trim(),
-          amount: amount.trim(),
-        }),
+        body: JSON.stringify(expenseObj),
       });
-      const text = await res.text();
-      console.log(text);
-
+      // const text = await res.text();
+      // console.log(text);
+      setLoading(false);
       setAmount("");
       setExpense("");
-      Alert.alert("Success", "Expense saved!");
+      Alert.alert("Success", "Expense saved to your google sheet!");
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Failed to save expense.");
@@ -82,7 +85,12 @@ export default function HomeScreen() {
         keyboardType="numeric"
       />
 
-      <Button title="Submit" onPress={handleSubmit} />
+      {loading ? (
+        <ActivityIndicator size="large" color="#007AFF" />
+      ) : (
+        <Button title="Submit" onPress={handleSubmit} disabled={loading} />
+      )}
+
     </View>
   );
 }
