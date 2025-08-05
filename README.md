@@ -64,7 +64,7 @@ git clone https://github.com/your-username/budget-tracker-app.git
 cd budget-tracker-app
 npm install
 npx expo start
-npm install -g eas-cli
+npm install -g eas-cli this is important
 
 
 Made with ❤️ by Bhuiyash Kumar
