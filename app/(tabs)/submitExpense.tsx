@@ -53,6 +53,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Budget Tracker</Text>
+      <Text>Build for Bhuiyash Kumar</Text>
 
       <Text>Date:</Text>
       <Button title={date.toDateString()} onPress={() => setShowPicker(true)} />
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    backgroundColor: "#fff",
+    backgroundColor: "lightblue",
     justifyContent: "center",
   },
   title: {
