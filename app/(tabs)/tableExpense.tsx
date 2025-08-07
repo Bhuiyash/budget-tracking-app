@@ -1,13 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { sheet_api_url } from "../../constants/api";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
-  RefreshControl,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { sheet_api_url } from "../../constants/api";
 
 type ExpenseItem = {
   date: string;
@@ -19,24 +22,53 @@ export default function TableExpenseScreen() {
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
 
   const fetchExpenses = async () => {
     try {
       const res = await fetch(sheet_api_url);
       const data = await res.json();
       setExpenses(data);
-      setLoading(false);
-      setRefreshing(false);
     } catch (error) {
       console.error("Failed to fetch expenses:", error);
+      Alert.alert("Error", "Failed to fetch expenses!");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  useEffect(() => {
-    fetchExpenses();
-  }, []);
+  const deleteRow = async (rowIndex: number, index: number) => {
+    try {
+      setDeletingIndex(index);
+
+      const res = await fetch(sheet_api_url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete",
+          rowIndex,
+        }),
+      });
+
+      const text = await res.text();
+      console.log("Delete Response:", text);
+      Alert.alert("Deleted", "Row deleted successfully.");
+      fetchExpenses();
+    } catch (error) {
+      console.error("Error deleting row:", error);
+      Alert.alert("Error", "Failed to delete row");
+    } finally {
+      setDeletingIndex(null);
+    }
+  };
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
+    fetchExpenses();
+  }, []);
+
+  useEffect(() => {
     fetchExpenses();
   }, []);
 
@@ -51,28 +83,39 @@ export default function TableExpenseScreen() {
   return (
     <FlatList
       data={expenses}
-      keyExtractor={(item, index) => index.toString()}
+      keyExtractor={(_, index) => index.toString()}
       contentContainerStyle={styles.container}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      ListHeaderComponent={
-        <View style={[styles.row, styles.headerRow]}>
-          <Text style={styles.headerCell}>Date</Text>
-          <Text style={styles.headerCell}>Expense</Text>
-          <Text style={styles.headerCell}>Amount</Text>
-        </View>
-      }
+      ListHeaderComponent={<Text style={styles.sectionTitle}>Your Expenses</Text>}
       renderItem={({ item, index }) => (
         <View
           style={[
-            styles.row,
-            { backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#e6f2ff" },
+            styles.card,
+            { backgroundColor: index % 2 === 0 ? "#ffffff" : "#f5f9ff" },
           ]}
         >
-          <Text style={styles.cell}>{item.date}</Text>
-          <Text style={styles.cell}>{item.expense}</Text>
-          <Text style={styles.cell}>₹ {item.amount}</Text>
+          <Text style={styles.date}>{item.date}</Text>
+          <View style={styles.detailsRow}>
+            <Text style={styles.expense}>{item.expense}</Text>
+            <View style={styles.amountBox}>
+              <Text style={styles.amountText}>₹ {item.amount}</Text>
+            </View>
+
+            <TouchableOpacity onPress={() => deleteRow(index + 2, index)}>
+              {deletingIndex === index ? (
+                <ActivityIndicator size="small" color="red" />
+              ) : (
+                <Ionicons
+                  name="trash-outline"
+                  size={20}
+                  color="red"
+                  style={{ marginLeft: 12 }}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
       )}
     />
@@ -89,26 +132,50 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#fff",
   },
-  row: {
-    flexDirection: "row",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderColor: "#ddd",
-  },
-  headerRow: {
-    backgroundColor: "#007bff",
-  },
-  headerCell: {
-    flex: 1,
+  sectionTitle: {
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#fff",
+    color: "#007bff",
+    marginBottom: 12,
     textAlign: "center",
-    fontSize: 16,
   },
-  cell: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 15,
+  card: {
+    marginVertical: 8,
+    padding: 14,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    backgroundColor: "#fff",
+  },
+  date: {
+    fontSize: 14,
+    color: "#888",
+    marginBottom: 6,
+    textAlign: "left",
+  },
+  detailsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  expense: {
+    fontSize: 16,
+    fontWeight: "500",
     color: "#333",
+    flex: 1,
+  },
+  amountBox: {
+    backgroundColor: "#e6f0ff",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  amountText: {
+    color: "#007bff",
+    fontWeight: "bold",
+    fontSize: 15,
   },
 });
