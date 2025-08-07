@@ -55,9 +55,13 @@ Execute as: Me
 
 Who has access: Anyone --very important
 
-Click Deploy and copy the Web App URL
 
-Paste this endpoint into your index tsx 
+Click Deploy and copy the Web App URL 
+
+create a file named api.ts inside the contants folder
+
+add this: 
+export const sheet_api_url="your google sheet api url";
 
 ```bash
 git clone https://github.com/your-username/budget-tracker-app.git
