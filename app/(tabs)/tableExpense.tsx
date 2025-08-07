@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { sheet_api_url } from "../../constants/api";
 import {
   ActivityIndicator,
   FlatList,
@@ -7,9 +8,6 @@ import {
   View,
   RefreshControl,
 } from "react-native";
-
-const SHEET_API_URL =
-  "https://script.google.com/macros/s/AKfycbyoipqP5ry5cRbdPVk54T9skSzKi8a8So5OzF11iaTl2WxeeXy0iUVTteaNtZQUQFK5/exec"; // Replace with your actual URL
 
 type ExpenseItem = {
   date: string;
@@ -24,7 +22,7 @@ export default function TableExpenseScreen() {
 
   const fetchExpenses = async () => {
     try {
-      const res = await fetch(SHEET_API_URL);
+      const res = await fetch(sheet_api_url);
       const data = await res.json();
       setExpenses(data);
       setLoading(false);

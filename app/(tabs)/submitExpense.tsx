@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { sheet_api_url } from "../../constants/api";
 
 export default function HomeScreen() {
   const [date, setDate] = useState(new Date());
@@ -32,7 +33,7 @@ export default function HomeScreen() {
           amount: amount.trim(),
         };
     try {
-      const res = await fetch("https://script.google.com/macros/s/AKfycbw7411FrzL256DaqqWZZkrpEWQYga23S_XzWKDNHOtBbrFMnz1_XrgSteq_-5GLTCSj/exec", {
+      const res = await fetch(sheet_api_url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
