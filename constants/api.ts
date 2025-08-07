@@ -1,1 +1,0 @@
-export const sheet_api_url="your google sheet api url";
