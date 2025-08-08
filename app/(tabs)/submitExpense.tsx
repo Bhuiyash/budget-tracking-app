@@ -5,13 +5,13 @@ import {
   Alert,
   Button,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
-  ScrollView,
 } from "react-native";
-import { sheet_api_url } from "../../constants/api";
+import { sheet_api_url } from "../constants/api";
 
 export default function HomeScreen() {
   const [date, setDate] = useState(new Date());

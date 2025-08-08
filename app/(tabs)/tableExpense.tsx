@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -9,8 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { sheet_api_url } from "../../constants/api";
+import { sheet_api_url } from "../constants/api";
 
 type ExpenseItem = {
   date: string;
@@ -88,7 +88,9 @@ export default function TableExpenseScreen() {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      ListHeaderComponent={<Text style={styles.sectionTitle}>Your Expenses</Text>}
+      ListHeaderComponent={
+        <Text style={styles.sectionTitle}>Your Expenses</Text>
+      }
       renderItem={({ item, index }) => (
         <View
           style={[
@@ -103,7 +105,22 @@ export default function TableExpenseScreen() {
               <Text style={styles.amountText}>₹ {item.amount}</Text>
             </View>
 
-            <TouchableOpacity onPress={() => deleteRow(index + 2, index)}>
+            <TouchableOpacity
+              onPress={() => {
+                Alert.alert(
+                  "Delete Expense",
+                  "Are you sure you want to delete this record?",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                      text: "Delete",
+                      style: "destructive",
+                      onPress: () => deleteRow(index + 2, index),
+                    },
+                  ]
+                );
+              }}
+            >
               {deletingIndex === index ? (
                 <ActivityIndicator size="small" color="red" />
               ) : (
