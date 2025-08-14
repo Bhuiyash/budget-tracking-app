@@ -1,73 +1,47 @@
-import { Picker } from "@react-native-picker/picker";
+import DropDownPicker from "react-native-dropdown-picker";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
+  Button,
   FlatList,
   Modal,
   RefreshControl,
-  StyleSheet, Text,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
-type Member = {
-  Id: string | number;
-  Name: string;
-  Job: string;
-  Location: string;
-  Mobile: string;
-  dob: string;
-};
+const SHEET_API_URL =
+  "https://script.google.com/macros/s/AKfycby5gAEj7hjTYmPwO66uSPgNWnovT9y_HZbqmVSG9Cz2Ity1Zdn8Gk3jCwalcHBpHfP2/exec";
 
 function formatDate(isoDate: string): string {
   const date = new Date(isoDate);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
+  return `${String(date.getDate()).padStart(2, "0")}-${String(
+    date.getMonth() + 1
+  ).padStart(2, "0")}-${date.getFullYear()}`;
 }
-type MonthlyDataItem = {
-   sno: string;
-      memberid: number;
-      date: string;
-      amount: string | number;
-      extra:string;
- 
+
+type ExpenseItem = {
+  sno: string;
+  date: string;
+  expense: string;
+  amount: string | number;
 };
 
- 
-export default function SubmitViewMonthlyScreen() {
-      const router = useRouter();
-const [members, setMembers] = useState<Member[]>([]);
-  const [selectedMemberId, setSelectedMemberId] = useState("");
-const [type, setType] = useState<'Monthly' | 'Special'>('Monthly');
-  const [specialReason, setSpecialReason] = useState('');
-   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  
-  const [amount, setAmount] = useState("");
-  const [date, setDate] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(false);
-  const [loading, setLoading] = useState(false);
- const [open, setOpen] = useState(false);
-  const [value, setValue] = useState<string | null>(null);
-  const [items, setItems] = useState<{ label: string; value: string }[]>([]);
-    //const [monthlyData, setMonthlyData] = useState<MonthlyDataItem[]>([]);
-    const [monthlyData, setMonthlyData] = useState<MonthlyDataItem[]>([]); // original, untouched
-const [filteredMonthlyData, setFilteredMonthlyData] = useState<MonthlyDataItem[]>([]); // shown in UI
- const [typeItems, setTypeItems] = useState([
-    { label: "Monthly", value: "Monthly" },
-    { label: "Special", value: "Special" },
-  ]);
-   const [typeOpen, setTypeOpen] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
-    const [editModalVisible, setEditModalVisible] = useState(false);
-      const [editingItem, setEditingItem] = useState<MonthlyDataItem | null>(null);
-    const [selectedMonth, setSelectedMonth] = useState(
-        new Date().getMonth() + 1
-      );
-      const monthNames = [
+export default function TableExpenseScreen() {
+  const router = useRouter();
+  const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState<ExpenseItem | null>(null);
+
+  // Month/Year dropdown state
+  const monthNames = [
     "January",
     "February",
     "March",
@@ -81,213 +55,206 @@ const [filteredMonthlyData, setFilteredMonthlyData] = useState<MonthlyDataItem[]
     "November",
     "December",
   ];
-    const monthlyApi="https://script.google.com/macros/s/AKfycbzWVbPQIx2TTvQtm5R96XPGaBnt36r_4Nh9M-e-7QX2p7dOwQZ7we5IjHzcTcM_Cnd8VA/exec";
-  // ✅ Fetch member list from Google Apps Script
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(
+    new Date().getMonth() + 1
+  );
+  const [monthOpen, setMonthOpen] = useState(false);
+  const [monthItems, setMonthItems] = useState(
+    monthNames.map((name, i) => ({ label: name, value: i + 1 }))
+  );
+
+  const [selectedYear, setSelectedYear] = useState<number | null>(
+    new Date().getFullYear()
+  );
+  const [yearOpen, setYearOpen] = useState(false);
+  const [yearItems, setYearItems] = useState(
+    [2023, 2024, 2025].map((year) => ({ label: `${year}`, value: year }))
+  );
+
   useEffect(() => {
-    fetch("https://script.google.com/macros/s/AKfycbwzNoO_750155zjMbjqFJRS5IdnAhXJB06Ry4uIc7HWWJVWaTe4AEBYNfqYpAG5Hz8t/exec")
-      .then((res) => res.json())
-      .then((data: Member[]) => {
-        const formatted = data.map((member) => ({
-  label: member.Name,
-  value: String(member.Id), // 👈 force value to be a string
-}));
-        setItems(formatted);
-    //   .then((data) => {
-    //     debugger
-    //     console.log(data)
-      
-    // setMembers(data.members || data); // adjust depending on the structure
-    //     setMembers(data);
-    //     if (data.length > 0) setSelectedMemberId(data[0].Id);
-      })
-      .catch((error) => {
-        console.error("Failed to load members:", error);
-        Alert.alert("Error", "Unable to load member list.");
-      });
+    fetchExpenses();
   }, []);
 
-  // ✅ Submit contribution
-  const handleSubmit = async () => {
-
-    debugger
-    if (!value || !amount || isNaN(Number(amount))) {
-      Alert.alert("Validation Error", "Please enter valid amount and select member.");
-      return;
-    }
- if (amount=="") {
-      Alert.alert("Required", "Please enter an amount.");
-      return;
-    }
-     if (value=="") {
-      Alert.alert("Required", "Please enter an amount.");
-      return;
-    }
-    const selectedMember = members.find((m) => m.Id === value);
-    // if (!selectedMember) {
-    //   Alert.alert("Error", "Selected member not found.");
-    //   return;
-    // }
-
-  
-      const selectedDate = new Date(selectedYear, selectedMonth - 1, 1);
-
-  // Format it as YYYY-MM-DD
-  const formattedDate = selectedDate.toISOString().split('T')[0];
-    const payload = {
-      memberid: value,
-     entrydate:formattedDate,
-      amount: parseFloat(amount),
-      specialreason:specialReason,
-    };
-alert(payload)
-    setLoading(true);
+  const fetchExpenses = async () => {
     try {
-      const res = await fetch(monthlyApi, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      setLoading(false);
-      setAmount("");
-      Alert.alert("Success", "Contribution saved successfully!");
-    } catch (error) {
-      setLoading(false);
-      console.error(error);
-      Alert.alert("Error", "Failed to submit contribution.");
-    }
-  };
-  useEffect(() => {
-      fetchMonthlyData();
-    }, []);
-  
-    const onRefresh = useCallback(() => {
-      setRefreshing(true);
-      fetchMonthlyData();
-    }, []);
- 
-
- const handleEdit = (item: MonthlyDataItem) => {
-    setEditingItem(item);
-    setEditModalVisible(true);
-  };
-  const fetchMonthlyData = async () => {
-    try {
-      const res = await fetch(monthlyApi);
+      setLoading(true);
+      const res = await fetch(SHEET_API_URL);
       const data = await res.json();
-      
-      setMonthlyData(data);
-      setFilteredMonthlyData(data);
+      setExpenses(data);
     } catch (error) {
       console.error("Failed to fetch expenses:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-    
-  }
-    const filteredExpenses = filteredMonthlyData.filter((item) => {
+  };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchExpenses();
+  }, []);
+
+  const filteredExpenses = expenses.filter((item) => {
     const itemDate = new Date(item.date);
-    return itemDate.getMonth() + 1 === selectedMonth && itemDate.getFullYear() === selectedYear;
-  });
-  ;
-
     return (
-    <View style={styles.container}>
-       {/* Header */}
-          <View style={styles.headerBar}>
-            <Text style={styles.pageTitle}>Contribution List</Text>
+      (!selectedMonth || itemDate.getMonth() + 1 === selectedMonth) &&
+      (!selectedYear || itemDate.getFullYear() === selectedYear)
+    );
+  });
+
+  const totalAmount = filteredExpenses.reduce((sum, item) => {
+    const amt =
+      typeof item.amount === "string" ? parseFloat(item.amount) : item.amount;
+    return sum + (isNaN(amt) ? 0 : amt);
+  }, 0);
+
+  const handleEdit = (item: ExpenseItem) => {
+    setEditingItem(item);
+    setEditModalVisible(true);
+  };
+
+  const handleSave = async () => {
+    if (!editingItem) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(SHEET_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingItem),
+      });
+      await response.text();
+      setEditModalVisible(false);
+      fetchExpenses();
+      Alert.alert("Success", "Data updated successfully!");
+    } catch (error) {
+      console.error("Failed to update:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={styles.page}>
+      {/* Header */}
+      <View style={styles.headerBar}>
+        <Text style={styles.pageTitle}>BMYB Members</Text>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => router.push("/add-expenses")}
+        >
+          <Text style={styles.addButtonText}>+ Add Expenses</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Filter Card */}
+      <View style={styles.filterCard}>
+        <View style={styles.pickerWrapper}>
+          <Text style={styles.filterLabel}>Month</Text>
+          <DropDownPicker
+            open={monthOpen}
+            value={selectedMonth}
+            items={monthItems}
+            setOpen={setMonthOpen}
+            setValue={setSelectedMonth}
+            setItems={setMonthItems}
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            placeholder="Select Month"
+          />
+        </View>
+
+        <View style={styles.pickerWrapper}>
+          <Text style={styles.filterLabel}>Year</Text>
+          <DropDownPicker
+            open={yearOpen}
+            value={selectedYear}
+            items={yearItems}
+            setOpen={setYearOpen}
+            setValue={setSelectedYear}
+            setItems={setYearItems}
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            placeholder="Select Year"
+          />
+        </View>
+      </View>
+
+      {/* Expenses List */}
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#007bff" />
+        </View>
+      ) : (
+        <FlatList
+          data={filteredExpenses}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={styles.listContainer}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListHeaderComponent={
+            <View style={styles.tableHeader}>
+              <Text style={styles.headerCell}>SNo</Text>
+              <Text style={styles.headerCell}>Date</Text>
+              <Text style={styles.headerCell}>Expense</Text>
+              <Text style={styles.headerCell}>Amount</Text>
+            </View>
+          }
+          renderItem={({ item, index }) => (
             <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => router.push("/add-monthly")}
+              onPress={() => handleEdit(item)}
+              style={[
+                styles.tableRow,
+                { backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#eef6ff" },
+              ]}
             >
-              <Text style={styles.addButtonText}>+ Add Contribution</Text>
+              <Text style={styles.cell}>{item.sno}</Text>
+              <Text style={styles.cell}>{formatDate(item.date)}</Text>
+              <Text style={styles.cell}>{item.expense}</Text>
+              <Text style={styles.cell}>₹ {item.amount}</Text>
             </TouchableOpacity>
-          </View>
+          )}
+          ListFooterComponent={
+            <View style={styles.totalRow}>
+              <Text style={[styles.cell, styles.boldText]}>Total</Text>
+              <Text style={styles.cell}></Text>
+              <Text style={styles.cell}></Text>
+              <Text style={[styles.cell, styles.boldText]}>
+                ₹ {totalAmount.toFixed(2)}
+              </Text>
+            </View>
+          }
+        />
+      )}
 
-
- {/* Filter Card */}
-    <View style={styles.filterCard}>
-      <View style={styles.pickerWrapper}>
-        <Text style={styles.filterLabel}>Month</Text>
-        <Picker
-          selectedValue={selectedMonth}
-          style={styles.picker}
-          onValueChange={(val) => setSelectedMonth(Number(val))}
-        >
-          {monthNames.map((name, i) => (
-            <Picker.Item key={i} label={name} value={i + 1} />
-          ))}
-        </Picker>
-      </View>
-
-      <View style={styles.pickerWrapper}>
-        <Text style={styles.filterLabel}>Year</Text>
-        <Picker
-          selectedValue={selectedYear}
-          style={styles.picker}
-          onValueChange={(val) => setSelectedYear(Number(val))}
-        >
-          {[2023, 2024, 2025].map((year) => (
-            <Picker.Item key={year} label={`${year}`} value={year} />
-          ))}
-        </Picker>
-      </View>
-    </View>
-
-   
-      <FlatList
-        data={filteredExpenses}
-        keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={styles.listContainer}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        ListHeaderComponent={
-          <View style={[styles.row, styles.headerRow]}>
-            <Text style={styles.headerCell}>SNo</Text>
-            <Text style={styles.headerCell}>MemId</Text>
-            <Text style={styles.headerCell}>Date</Text>
-            <Text style={styles.headerCell}>Amount</Text>
-            <Text style={styles.headerCell}>Extra</Text>
-          </View>
-        }
-        renderItem={({ item, index }) => (
-          <TouchableOpacity
-            onPress={() => handleEdit(item)}
-            style={[
-              styles.row,
-              { backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#e6f2ff" },
-            ]}
-          >
-            <Text style={styles.cell}>{item.sno}</Text>
-            <Text style={styles.cell}>{item.memberid}</Text>
-            <Text style={styles.cell}>{formatDate(item.date)}</Text>
-            <Text style={styles.cell}>₹{item.amount}</Text>
-            <Text style={styles.cell}>{item.extra}</Text>
-          </TouchableOpacity>
-        )}
-        ListFooterComponent={
-          <View style={[styles.row, { backgroundColor: "#d1ecf1" }]}>
-            <Text style={[styles.cell, { fontWeight: "bold" }]}>Total</Text>
-            <Text style={styles.cell}></Text>
-            <Text style={styles.cell}></Text>
-            <Text style={[styles.cell, { fontWeight: "bold" }]}>₹2</Text>
-          </View>
-        }
-      />
-       {/* Modal */}
-      <Modal visible={editModalVisible} transparent={true} animationType="slide">
+      {/* Edit Modal */}
+      <Modal visible={editModalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Monthly</Text>
-  
-         <TextInput style={styles.input} value={editingItem?.amount.toString()} keyboardType="numeric" onChangeText={(text) => setEditingItem((prev) => prev && { ...prev, amount: text })} />
-                  
-           
-  
-           
-  
+            <Text style={styles.modalTitle}>Edit Expense</Text>
+            <TextInput
+              style={styles.input}
+              value={editingItem?.date}
+              onChangeText={(text) =>
+                setEditingItem((prev) => prev && { ...prev, date: text })
+              }
+            />
+            <TextInput
+              style={styles.input}
+              value={editingItem?.expense}
+              onChangeText={(text) =>
+                setEditingItem((prev) => prev && { ...prev, expense: text })
+              }
+            />
+            <TextInput
+              style={styles.input}
+              value={editingItem?.amount.toString()}
+              keyboardType="numeric"
+              onChangeText={(text) =>
+                setEditingItem((prev) => prev && { ...prev, amount: text })
+              }
+            />
             <View style={styles.buttonRow}>
               <TouchableOpacity
                 onPress={() => setEditModalVisible(false)}
@@ -295,106 +262,42 @@ alert(payload)
               >
                 <Text>Cancel</Text>
               </TouchableOpacity>
-  
-             
+              {loading ? (
+                <ActivityIndicator size="large" color="#007bff" />
+              ) : (
+                <Button title="Save" onPress={handleSave} />
+              )}
             </View>
           </View>
         </View>
       </Modal>
     </View>
-    
-    
   );
- 
 }
 
 const styles = StyleSheet.create({
-   modalContent: { margin: 20, backgroundColor: "#fff", padding: 20, borderRadius: 10 },
+  modalContainer: { flex: 1, justifyContent: "center", backgroundColor: "rgba(0,0,0,0.3)" },
+  modalContent: { margin: 20, backgroundColor: "#fff", padding: 20, borderRadius: 10 },
   modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 10 },
-   buttonRow: { flexDirection: "row", justifyContent: "flex-end", gap: 10, marginTop: 10 },
-  button: { padding: 10, borderRadius: 5 },checkbox: {
-    marginRight: 10,
-  },picker: {
-    height: 54,
-    width: "100%",
-  }, filterCard: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    elevation: 2,
-  },
-  pickerWrapper: {
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  filterLabel: {
-    fontSize: 12,
-    color: "#555",
-    marginBottom: -4,
-  },
-  headerBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  pageTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  addButton: {
-    backgroundColor: "#007bff",
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-  },  modalContainer: { flex: 1, justifyContent: "center", backgroundColor: "rgba(0,0,0,0.3)" },
-  addButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  container: {
-    padding: 12,
-    backgroundColor: "#fff",
-    flex: 1,
-  },
-  listContainer: {
-    paddingBottom: 20,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginVertical: 10,
-  },
-  label: {
-    marginTop: 10,
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    borderRadius: 6,
-    marginTop: 5,
-  },
-  row: {
-    flexDirection: "row",
-    padding: 10,
-  },
-  headerRow: {
-    backgroundColor: "#007AFF",
-  },
-  headerCell: {
-    flex: 1,
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  cell: {
-    flex: 1,
-  },
+  input: { borderWidth: 1, borderColor: "#ccc", marginVertical: 8, padding: 10, borderRadius: 5 },
+  buttonRow: { flexDirection: "row", justifyContent: "flex-end", gap: 10, marginTop: 10 },
+  button: { padding: 10, borderRadius: 5 },
+  page: { flex: 1, backgroundColor: "#f4f6f8", padding: 12 },
+  headerBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+  pageTitle: { fontSize: 20, fontWeight: "bold", color: "#333" },
+  addButton: { backgroundColor: "#007bff", paddingVertical: 8, paddingHorizontal: 14, borderRadius: 8 },
+  addButtonText: { color: "#fff", fontSize: 14, fontWeight: "600" },
+  filterCard: { backgroundColor: "#fff", borderRadius: 8, padding: 12, marginBottom: 10, flexDirection: "row", justifyContent: "space-between", elevation: 2 },
+  pickerWrapper: { flex: 1, marginHorizontal: 5, zIndex: 1000 },
+  filterLabel: { fontSize: 12, color: "#555", marginBottom: 4 },
+  dropdown: { borderColor: "#ccc" },
+  dropdownContainer: { borderColor: "#ccc" },
+  listContainer: { backgroundColor: "#fff", borderRadius: 8, overflow: "hidden" },
+  tableHeader: { flexDirection: "row", backgroundColor: "#007bff", paddingVertical: 10, paddingHorizontal: 6 },
+  headerCell: { flex: 1, color: "#fff", fontWeight: "bold", fontSize: 13, textAlign: "center" },
+  tableRow: { flexDirection: "row", paddingVertical: 8, paddingHorizontal: 6 },
+  cell: { flex: 1, fontSize: 13, textAlign: "center", color: "#333" },
+  totalRow: { flexDirection: "row", backgroundColor: "#d1ecf1", paddingVertical: 10, paddingHorizontal: 6 },
+  boldText: { fontWeight: "bold" },
+  center: { alignItems: "center", justifyContent: "center", flex: 1 },
 });
