@@ -18,6 +18,15 @@ type ExpenseItem = {
   amount: string | number;
 };
 
+// Helper function to format date as dd/mm/yy
+function formatDateDMY(dateString: string) {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = String(date.getFullYear()).slice(-2);
+  return `${day}/${month}/${year}`;
+}
+
 export default function TableExpenseScreen() {
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +37,7 @@ export default function TableExpenseScreen() {
     try {
       const res = await fetch(sheet_api_url);
       const data = await res.json();
-      setExpenses(data);
+      setExpenses(data.reverse()); // Show latest entries first
     } catch (error) {
       console.error("Failed to fetch expenses:", error);
       Alert.alert("Error", "Failed to fetch expenses!");
@@ -98,7 +107,7 @@ export default function TableExpenseScreen() {
             { backgroundColor: index % 2 === 0 ? "#ffffff" : "#f5f9ff" },
           ]}
         >
-          <Text style={styles.date}>{item.date}</Text>
+          <Text style={styles.date}>{formatDateDMY(item.date)}</Text>
           <View style={styles.detailsRow}>
             <Text style={styles.expense}>{item.expense}</Text>
             <View style={styles.amountBox}>
