@@ -37,7 +37,7 @@ export default function TableExpenseScreen() {
     try {
       const res = await fetch(sheet_api_url);
       const data = await res.json();
-      setExpenses(data.reverse()); // Show latest entries first
+      setExpenses(data); // Show latest entries first
     } catch (error) {
       console.error("Failed to fetch expenses:", error);
       Alert.alert("Error", "Failed to fetch expenses!");
