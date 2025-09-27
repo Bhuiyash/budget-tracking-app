@@ -56,8 +56,8 @@ export default function HomeScreen() {
   return (
     <ScrollView contentContainerStyle={styles.scroll}>
       <View style={styles.container}>
-        <Text style={styles.title}>💰 Budget Tracker</Text>
-        <Text style={styles.subtitle}>Built for Bhuiyash Kumar</Text>
+        <Text style={styles.title}>💰 Budget Tracker 💰</Text>
+        <Text style={styles.subtitle}>Built By Bhuiyash Kumar</Text>
 
         <Text style={styles.label}>Select Date:</Text>
         <Button title={date.toDateString()} onPress={() => setShowPicker(true)} />
@@ -72,8 +72,7 @@ export default function HomeScreen() {
             }}
           />
         )}
-
-        <Text style={styles.label}>Expense Description:</Text>
+        <Text style={styles.label}>Expense:</Text>
         <TextInput
           style={styles.input}
           placeholder="e.g. Groceries"
@@ -81,7 +80,7 @@ export default function HomeScreen() {
           onChangeText={setExpense}
         />
 
-        <Text style={styles.label}>Amount (₹):</Text>
+        <Text style={styles.label}>Amount(₹):</Text>
         <TextInput
           style={styles.input}
           placeholder="e.g. 500"
