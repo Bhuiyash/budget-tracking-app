@@ -12,9 +12,10 @@
       "package": "com.bhuiyash.budgettrackerapp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#3b82f6"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "icon": "./assets/images/icon.png"
     },
     "ios": {
       "supportsTablet": true
