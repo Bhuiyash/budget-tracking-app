@@ -16,6 +16,7 @@ type ExpenseItem = {
   date: string;
   expense: string;
   amount: string | number;
+  originalIndex?: number; // Track original row position
 };
 
 // Helper function to format date as dd/mm/yy
@@ -37,7 +38,16 @@ export default function TableExpenseScreen() {
     try {
       const res = await fetch(sheet_api_url);
       const data = await res.json();
-      setExpenses(data); // Show latest entries first
+      // Add original index to each item before sorting
+      const dataWithIndex = data.map((item: ExpenseItem, index: number) => ({
+        ...item,
+        originalIndex: index + 2 // +2 because sheet rows start from 2 (after header)
+      }));
+      // Sort by date to show latest entries first
+      const sortedData = dataWithIndex.sort((a: ExpenseItem, b: ExpenseItem) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      setExpenses(sortedData);
     } catch (error) {
       console.error("Failed to fetch expenses:", error);
       Alert.alert("Error", "Failed to fetch expenses!");
@@ -124,7 +134,7 @@ export default function TableExpenseScreen() {
                     {
                       text: "Delete",
                       style: "destructive",
-                      onPress: () => deleteRow(index + 2, index),
+                      onPress: () => deleteRow(item.originalIndex || index + 2, index),
                     },
                   ]
                 );
