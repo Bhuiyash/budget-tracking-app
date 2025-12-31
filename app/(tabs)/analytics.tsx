@@ -7,7 +7,6 @@ import {
     Text,
     View,
 } from "react-native";
-import BudgetLogo from "../../components/BudgetLogo";
 import { sheet_api_url } from "../constants/api";
 
 const { width } = Dimensions.get("window");

@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import BudgetLogo from "../../components/BudgetLogo";
 import { sheet_api_url } from "../constants/api";
 
 export default function HomeScreen() {

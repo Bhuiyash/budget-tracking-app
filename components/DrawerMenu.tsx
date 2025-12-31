@@ -1,15 +1,15 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Modal,
-  Animated,
-  Dimensions,
-  Alert,
+    Alert,
+    Animated,
+    Dimensions,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import BudgetLogo from './BudgetLogo';
 
 const { width, height } = Dimensions.get('window');
