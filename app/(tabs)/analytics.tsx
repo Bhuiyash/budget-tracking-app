@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  Dimensions,
+    ActivityIndicator,
+    Dimensions,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
+import BudgetLogo from "../../components/BudgetLogo";
 import { sheet_api_url } from "../constants/api";
 
 const { width } = Dimensions.get("window");
@@ -127,7 +128,14 @@ export default function AnalyticsScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>📊 Expense Analytics</Text>
+      {/* Header with Logo */}
+      <View style={styles.header}>
+        <BudgetLogo size="medium" showText={false} color="#3b82f6" />
+        <View style={styles.headerText}>
+          <Text style={styles.title}>📊 Expense Analytics</Text>
+          <Text style={styles.subtitle}>Insights into your spending</Text>
+        </View>
+      </View>
       
       {/* Total Overview */}
       <View style={styles.overviewCard}>
@@ -187,12 +195,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f6fa",
     padding: 16,
   },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+    paddingTop: 20,
+    gap: 16,
+  },
+  headerText: {
+    alignItems: "center",
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 20,
     color: "#2c3e50",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#7f8c8d",
+    textAlign: "center",
+    marginTop: 4,
   },
   overviewCard: {
     backgroundColor: "#3498db",

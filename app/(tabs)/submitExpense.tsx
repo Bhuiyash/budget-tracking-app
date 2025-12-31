@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import BudgetLogo from "../../components/BudgetLogo";
 import { sheet_api_url } from "../constants/api";
 
 export default function HomeScreen() {
@@ -68,8 +69,11 @@ export default function HomeScreen() {
     <ScrollView contentContainerStyle={styles.scroll}>
       <View style={styles.container}>
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>💰 Budget Tracker</Text>
-          <Text style={styles.subtitle}>Built By Bhuiyash Kumar</Text>
+          <BudgetLogo size="large" showText={true} />
+          <View style={styles.headerText}>
+            <Text style={styles.title}>Add New Expense</Text>
+            <Text style={styles.subtitle}>Track your spending easily</Text>
+          </View>
         </View>
 
         <View style={styles.formContainer}>
@@ -172,20 +176,26 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     paddingTop: 30,
   },
+  headerText: {
+    alignItems: "center",
+    marginTop: 16,
+  },
   title: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: "900",
     color: "#ffffff",
     marginBottom: 8,
     textShadowColor: "rgba(59, 130, 246, 0.5)",
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 10,
+    textAlign: "center",
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#94a3b8",
     fontWeight: "500",
     letterSpacing: 0.5,
+    textAlign: "center",
   },
   formContainer: {
     backgroundColor: "rgba(255, 255, 255, 0.95)",
