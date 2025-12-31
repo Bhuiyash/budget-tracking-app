@@ -68,14 +68,6 @@ export default function HomeScreen() {
   return (
     <ScrollView contentContainerStyle={styles.scroll}>
       <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <BudgetLogo size="large" showText={true} />
-          <View style={styles.headerText}>
-            <Text style={styles.title}>Add New Expense</Text>
-            <Text style={styles.subtitle}>Track your spending easily</Text>
-          </View>
-        </View>
-
         <View style={styles.formContainer}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>📅 Select Date</Text>

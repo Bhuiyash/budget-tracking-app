@@ -152,15 +152,7 @@ export default function TableExpenseScreen() {
 
   return (
     <View style={styles.mainContainer}>
-      <View style={styles.headerContainer}>
-        <View style={styles.logoSection}>
-          <BudgetLogo size="medium" showText={false} />
-          <View style={styles.headerText}>
-            <Text style={styles.pageTitle}>💸 Expense History</Text>
-            <Text style={styles.pageSubtitle}>Track your spending journey</Text>
-          </View>
-        </View>
-        
+      <View style={styles.contentContainer}>
         {/* Total Expense Summary */}
         <View style={styles.summaryCard}>
           <View style={styles.summaryContent}>
@@ -326,6 +318,11 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingHorizontal: 20,
     paddingBottom: 30,
+    backgroundColor: "#0f172a",
+  },
+  contentContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
     backgroundColor: "#0f172a",
   },
   logoSection: {

@@ -128,15 +128,6 @@ export default function AnalyticsScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header with Logo */}
-      <View style={styles.header}>
-        <BudgetLogo size="medium" showText={false} color="#3b82f6" />
-        <View style={styles.headerText}>
-          <Text style={styles.title}>📊 Expense Analytics</Text>
-          <Text style={styles.subtitle}>Insights into your spending</Text>
-        </View>
-      </View>
-      
       {/* Total Overview */}
       <View style={styles.overviewCard}>
         <Text style={styles.overviewTitle}>Total Expenses</Text>
