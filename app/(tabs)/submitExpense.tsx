@@ -24,8 +24,10 @@ export default function HomeScreen() {
   const categories = [
     { id: "transport", label: "🚗 Transport", icon: "🚗" },
     { id: "grocery", label: "🛒 Grocery", icon: "🛒" },
-    { id: "miscellaneous", label: "📦 Miscellaneous", icon: "📦" },
+    { id: "food", label: "🍔 Food", icon: "🍔" },
+    { id: "entertainment", label: "🎉 Entertainment", icon: "🎉" },
     { id: "travel", label: "✈️ Travel", icon: "✈️" },
+    { id: "miscellaneous", label: "📦 Miscellaneous", icon: "📦" },
   ];
 
   const handleSubmit = async () => {
@@ -99,6 +101,7 @@ export default function HomeScreen() {
               placeholderTextColor="#999"
             />
           </View>
+          
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>💰 Amount (₹)</Text>
