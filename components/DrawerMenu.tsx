@@ -98,7 +98,7 @@ export default function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
         onClose();
         Alert.alert(
           'About Budget Tracker',
-          'Version 1.0\n\nA modern expense tracking app built with React Native and Expo.\n\nDeveloped by Bhuiyash Kumar\n\nFeatures:\n• Track daily expenses\n• Categorize spending\n• View analytics and insights\n• Export data\n\n© 2026 Budget Tracker'
+          'Version 1.5.3\n\nA modern expense tracking app built with React Native and Expo.\n\nDeveloped by Bhuiyash Kumar\n\nFeatures:\n• Track daily expenses\n• Categorize spending\n• View analytics and insights\n• Export data\n\n© 2026 Budget Tracker'
         );
       },
     },
