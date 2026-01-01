@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Dimensions,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { sheet_api_url } from "../constants/api";
 
@@ -31,41 +31,109 @@ export default function AnalyticsScreen() {
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const [insights, setInsights] = useState<string[]>([]);
 
-  const colors = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40"];
+  const colors = [
+    "#FF6384",
+    "#36A2EB",
+    "#FFCE56",
+    "#4BC0C0",
+    "#9966FF",
+    "#FF9F40",
+  ];
 
   // Simple category classification
   const categorizeExpense = (expense: string): string => {
     const lowerExpense = expense.toLowerCase();
-    if (lowerExpense.includes("food") || lowerExpense.includes("grocery") || lowerExpense.includes("restaurant")) return "Food";
-    if (lowerExpense.includes("transport") || lowerExpense.includes("fuel") || lowerExpense.includes("taxi")) return "Transport";
-    if (lowerExpense.includes("entertainment") || lowerExpense.includes("movie") || lowerExpense.includes("game")) return "Entertainment";
-    if (lowerExpense.includes("health") || lowerExpense.includes("medical") || lowerExpense.includes("doctor")) return "Health";
-    if (lowerExpense.includes("shopping") || lowerExpense.includes("clothes") || lowerExpense.includes("shoe")) return "Shopping";
+    if (
+      lowerExpense.includes("food") ||
+      lowerExpense.includes("swiggy") ||
+      lowerExpense.includes("restaurant") ||
+      lowerExpense.includes("zomato") ||
+      lowerExpense.includes("lunch")
+    )
+      return "Food";
+    if (
+      lowerExpense.includes("transport") ||
+      lowerExpense.includes("uber") ||
+      lowerExpense.includes("taxi")
+    )
+      return "Transport";
+    if (
+      lowerExpense.includes("entertainment") ||
+      lowerExpense.includes("movie") ||
+      lowerExpense.includes("spotify")
+    )
+      return "Entertainment";
+    if (
+      lowerExpense.includes("health") ||
+      lowerExpense.includes("medical") ||
+      lowerExpense.includes("doctor")
+    )
+      return "Health";
+    if (
+      lowerExpense.includes("rent") ||
+      lowerExpense.includes("mortgage") ||
+      lowerExpense.includes("house")
+    )
+      return "Rent";
+    if (
+      lowerExpense.includes("intrcity") ||
+      lowerExpense.includes("flight") ||
+      lowerExpense.includes("hotel")
+    )
+      return "Travel";
+    if (
+      lowerExpense.includes("online shopping") ||
+      lowerExpense.includes("amazon") ||
+      lowerExpense.includes("online")
+    )
+      return "Online Shopping";
+    if (
+      lowerExpense.includes("miscellaneous") ||
+      lowerExpense.includes("other") ||
+      lowerExpense.includes("various")
+    )
+      return "Miscellaneous";
     return "Others";
   };
 
-  const generateInsights = (data: CategoryData[], total: number, expenseCount: number) => {
+  const generateInsights = (
+    data: CategoryData[],
+    total: number,
+    expenseCount: number,
+    expenses: ExpenseItem[]
+  ) => {
     const insights: string[] = [];
-    
+
     if (data.length > 0) {
       const topCategory = data[0];
-      insights.push(`💡 You spend most on ${topCategory.category} (${topCategory.percentage}% of total)`);
-      
+      insights.push(
+        `💡 You spend most on ${topCategory.category} (${topCategory.percentage}% of total)`
+      );
+
       const avgExpense = total / expenseCount;
       insights.push(`📊 Your average expense is ₹${avgExpense.toFixed(0)}`);
-      
+
       if (topCategory.percentage > 50) {
-        insights.push(`⚠️ Consider diversifying your spending - ${topCategory.category} takes more than half your budget`);
+        insights.push(
+          `⚠️ Consider diversifying your spending - ${topCategory.category} takes more than half your budget`
+        );
       }
-      
-      const thisMonth = new Date().getMonth() + 1;
-      insights.push(`📅 This month's total: ₹${total}`);
-      
-      if (total > 10000) {
-        insights.push(`💰 High spending detected! Consider setting a monthly budget limit`);
+
+      const monthsTotal=getCurrentMonthTotal(expenses);
+
+      insights.push(
+        `📅 This month's total: ₹${monthsTotal.toLocaleString()}`
+      );
+
+      if (monthsTotal > 15000) {
+        insights.push(
+          `💰 High spending this month! Consider setting a monthly budget limit`
+        );
+      } else if (monthsTotal < 5000) {
+        insights.push(`✅ Great job staying within budget this month!`);
       }
     }
-    
+
     return insights;
   };
 
@@ -74,13 +142,14 @@ export default function AnalyticsScreen() {
       const res = await fetch(sheet_api_url);
       const data = await res.json();
       setExpenses(data);
-      
+
       // Calculate total expense
-      const total = data.reduce((sum: number, item: ExpenseItem) => 
-        sum + (Number(item.amount) || 0), 0
+      const total = data.reduce(
+        (sum: number, item: ExpenseItem) => sum + (Number(item.amount) || 0),
+        0
       );
       setTotalExpense(total);
-      
+
       // Categorize expenses
       const categoryMap = new Map<string, number>();
       data.forEach((item: ExpenseItem) => {
@@ -88,7 +157,7 @@ export default function AnalyticsScreen() {
         const amount = Number(item.amount) || 0;
         categoryMap.set(category, (categoryMap.get(category) || 0) + amount);
       });
-      
+
       // Convert to array and calculate percentages
       const categoryArray: CategoryData[] = Array.from(categoryMap.entries())
         .map(([category, amount], index) => ({
@@ -98,13 +167,17 @@ export default function AnalyticsScreen() {
           color: colors[index % colors.length],
         }))
         .sort((a, b) => b.total - a.total);
-      
+
       setCategoryData(categoryArray);
-      
+
       // Generate AI-like insights
-      const generatedInsights = generateInsights(categoryArray, total, data.length);
+      const generatedInsights = generateInsights(
+        categoryArray,
+        total,
+        data.length,
+        data
+      );
       setInsights(generatedInsights);
-      
     } catch (error) {
       console.error("Failed to fetch expenses:", error);
     } finally {
@@ -131,7 +204,9 @@ export default function AnalyticsScreen() {
       <View style={styles.overviewCard}>
         <Text style={styles.overviewTitle}>Total Expenses</Text>
         <Text style={styles.overviewAmount}>₹{totalExpense}</Text>
-        <Text style={styles.overviewSubtext}>{expenses.length} transactions</Text>
+        <Text style={styles.overviewSubtext}>
+          {expenses.length} transactions
+        </Text>
       </View>
 
       {/* Simple Pie Chart */}
@@ -140,12 +215,14 @@ export default function AnalyticsScreen() {
         <View style={styles.pieChart}>
           {categoryData.map((item, index) => (
             <View key={item.category} style={styles.pieSlice}>
-              <View 
-                style={[styles.colorBox, { backgroundColor: item.color }]} 
+              <View
+                style={[styles.colorBox, { backgroundColor: item.color }]}
               />
               <View style={styles.categoryInfo}>
                 <Text style={styles.categoryName}>{item.category}</Text>
-                <Text style={styles.categoryAmount}>₹{item.total} ({item.percentage}%)</Text>
+                <Text style={styles.categoryAmount}>
+                  ₹{item.total} ({item.percentage}%)
+                </Text>
               </View>
             </View>
           ))}
@@ -165,10 +242,18 @@ export default function AnalyticsScreen() {
       {/* Recommendations */}
       <View style={styles.recommendationsCard}>
         <Text style={styles.recommendationsTitle}>💡 Recommendations</Text>
-        <Text style={styles.recommendationText}>• Track daily expenses to identify spending patterns</Text>
-        <Text style={styles.recommendationText}>• Set category-wise budget limits</Text>
-        <Text style={styles.recommendationText}>• Review weekly expenses to avoid overspending</Text>
-        <Text style={styles.recommendationText}>• Consider using the 50/30/20 rule for budgeting</Text>
+        <Text style={styles.recommendationText}>
+          • Track daily expenses to identify spending patterns
+        </Text>
+        <Text style={styles.recommendationText}>
+          • Set category-wise budget limits
+        </Text>
+        <Text style={styles.recommendationText}>
+          • Review weekly expenses to avoid overspending
+        </Text>
+        <Text style={styles.recommendationText}>
+          • Consider using the 50/30/20 rule for budgeting
+        </Text>
       </View>
     </ScrollView>
   );
@@ -308,3 +393,41 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+function getCurrentMonthTotal(expenses: ExpenseItem[]) {
+    // Calculate current month's total
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+
+      const thisMonthExpenses = expenses.filter((expense) => {
+        const expenseDate = new Date(expense.date);
+        return (
+          expenseDate.getMonth() === currentMonth &&
+          expenseDate.getFullYear() === currentYear
+        );
+      });
+
+      const thisMonthTotal = thisMonthExpenses.reduce(
+        (sum, expense) => sum + (Number(expense.amount) || 0),
+        0
+      );
+
+      const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      const currentMonthName = monthNames[currentMonth];
+      return thisMonthTotal;
+    
+}
+

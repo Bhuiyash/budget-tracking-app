@@ -27,12 +27,17 @@ export default function HomeScreen() {
     { id: "food", label: "🍔 Food", icon: "🍔" },
     { id: "entertainment", label: "🎉 Entertainment", icon: "🎉" },
     { id: "travel", label: "✈️ Travel", icon: "✈️" },
+    { id: "rent", label: "🏠 Rent", icon: "🏠" },
+    { id: "online Shopping", label: "🛍️ Online Shopping", icon: "🛍️" },
     { id: "miscellaneous", label: "📦 Miscellaneous", icon: "📦" },
   ];
 
   const handleSubmit = async () => {
     if (!expense || !amount || !category || isNaN(Number(amount))) {
-      Alert.alert("Validation Error", "Please fill all fields with valid data.");
+      Alert.alert(
+        "Validation Error",
+        "Please fill all fields with valid data."
+      );
       return;
     }
 
@@ -101,7 +106,6 @@ export default function HomeScreen() {
               placeholderTextColor="#999"
             />
           </View>
-          
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>💰 Amount (₹)</Text>
@@ -128,7 +132,9 @@ export default function HomeScreen() {
                   onPress={() => setCategory(cat.id)}
                 >
                   <View style={styles.radioButton}>
-                    {category === cat.id && <View style={styles.radioSelected} />}
+                    {category === cat.id && (
+                      <View style={styles.radioSelected} />
+                    )}
                   </View>
                   <Text style={styles.categoryText}>{cat.label}</Text>
                 </TouchableOpacity>
@@ -143,7 +149,11 @@ export default function HomeScreen() {
             </View>
           ) : (
             <TouchableOpacity
-              style={[styles.submitButton, (!expense || !amount || !category) && styles.submitButtonDisabled]}
+              style={[
+                styles.submitButton,
+                (!expense || !amount || !category) &&
+                  styles.submitButtonDisabled,
+              ]}
               onPress={handleSubmit}
               disabled={loading || !expense || !amount || !category}
             >
