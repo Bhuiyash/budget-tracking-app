@@ -1,14 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-    Alert,
-    Animated,
-    Dimensions,
-    Modal,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Animated,
+  Dimensions,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import BudgetLogo from './BudgetLogo';
 
@@ -39,6 +39,19 @@ export default function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   }, [visible]);
 
   const menuItems = [
+    {
+      id: 'budget',
+      title: 'Budget Settings',
+      icon: 'wallet-outline',
+      description: 'Set monthly budget and track spending',
+      onPress: () => {
+        onClose();
+        Alert.alert(
+          'Budget Settings',
+          'Use the Budget tab to set your monthly budget and track your spending limits!'
+        );
+      },
+    },
     {
       id: 'categories',
       title: 'Manage Categories',
