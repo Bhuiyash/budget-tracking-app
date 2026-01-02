@@ -36,14 +36,28 @@ export default function AnalyticsScreen() {
   const [categoryData, setCategoryData] = useState<PieChartData[]>([]);
   const [insights, setInsights] = useState<string[]>([]);
 
-  const colors = [
-    "#FF6384",
-    "#36A2EB",
-    "#FFCE56",
-    "#4BC0C0",
-    "#9966FF",
-    "#FF9F40",
-  ];
+  // Define unique colors for each category
+  const getCategoryColor = (category: string): string => {
+    const categoryColors: { [key: string]: string } = {
+      "Transport": "#FF6384",      // Pink/Red
+      "Grocery": "#36A2EB",        // Blue
+      "Food": "#FFCE56",           // Yellow
+      "Entertainment": "#4BC0C0",   // Teal
+      "Travel": "#9966FF",         // Purple
+      "Rent": "#FF9F40",           // Orange
+      "Online Shopping": "#FF6B6B", // Light Red
+      "Health": "#4ECDC4",         // Mint
+      "Maintenance": "#45B7D1",    // Sky Blue
+      "Miscellaneous": "#96CEB4",  // Light Green
+      "Others": "#FFEAA7",         // Light Yellow
+      "Education": "#DDA0DD",      // Plum
+      "Insurance": "#98D8C8",      // Aquamarine
+      "Utilities": "#F7DC6F",      // Light Gold
+      "Clothing": "#BB8FCE"        // Light Purple
+    };
+    
+    return categoryColors[category] || "#95A5A6"; // Default gray for unknown categories
+  };
 
   // Get category from expense item or fallback to text-based classification
   const getExpenseCategory = (expenseItem: ExpenseItem): string => {
@@ -210,11 +224,11 @@ export default function AnalyticsScreen() {
 
       // Convert to array and calculate percentages
       const categoryArray: PieChartData[] = Array.from(categoryMap.entries())
-        .map(([category, amount], index) => ({
+        .map(([category, amount]) => ({
           category,
           total: amount,
           percentage: Math.round((amount / total) * 100),
-          color: colors[index % colors.length],
+          color: getCategoryColor(category),
         }))
         .sort((a, b) => b.total - a.total);
 

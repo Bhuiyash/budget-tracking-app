@@ -1,5 +1,5 @@
-import React from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Dimensions, Easing, StyleSheet, Text, View } from 'react-native';
 import Svg, { G, Path } from 'react-native-svg';
 
 export interface PieChartData {
@@ -24,6 +24,56 @@ export default function PieChart({
   centerText = "Total",
   centerValue = ""
 }: PieChartProps) {
+  // Animation values
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const rotationAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const legendAnimValues = useRef(
+    data.map(() => new Animated.Value(0))
+  ).current;
+
+  useEffect(() => {
+    // Start animations when component mounts
+    const animations = [
+      // Scale animation for the chart
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.out(Easing.back(1.2)),
+        useNativeDriver: true,
+      }),
+      // Rotation animation for the chart
+      Animated.timing(rotationAnim, {
+        toValue: 1,
+        duration: 1500,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      // Fade in animation for center content
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        delay: 500,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ];
+
+    // Legend items staggered animation
+    const legendAnimations = legendAnimValues.map((animValue, index) =>
+      Animated.timing(animValue, {
+        toValue: 1,
+        duration: 600,
+        delay: 800 + (index * 100), // Stagger each item by 100ms
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      })
+    );
+
+    // Run all animations in parallel
+    Animated.parallel([...animations, ...legendAnimations]).start();
+  }, [data]);
+
   if (!data || data.length === 0) {
     return (
       <View style={styles.emptyContainer}>
@@ -67,61 +117,124 @@ export default function PieChart({
   let currentAngle = 0;
   const total = data.reduce((sum, item) => sum + item.total, 0);
 
+  // Animated rotation value
+  const rotationInterpolation = rotationAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
   return (
     <View style={styles.container}>
       <View style={styles.chartContainer}>
-        <Svg width={size} height={size}>
-          <G>
-            {data.map((item, index) => {
-              const sliceAngle = (item.percentage / 100) * 360;
-              
-              // Skip very small slices
-              if (item.percentage < 1) {
-                return null;
-              }
-              
-              const path = createPath(currentAngle, currentAngle + sliceAngle);
-              currentAngle += sliceAngle;
-              
-              return (
-                <Path
-                  key={`slice-${index}`}
-                  d={path}
-                  fill={item.color}
-                  stroke="#ffffff"
-                  strokeWidth={2}
-                />
-              );
-            })}
-          </G>
-        </Svg>
+        <Animated.View
+          style={[
+            styles.chartWrapper,
+            {
+              transform: [
+                { scale: scaleAnim },
+                { rotate: rotationInterpolation },
+              ],
+            },
+          ]}
+        >
+          <Svg width={size} height={size}>
+            <G>
+              {data.map((item, index) => {
+                const sliceAngle = (item.percentage / 100) * 360;
+                
+                // Skip very small slices
+                if (item.percentage < 1) {
+                  return null;
+                }
+                
+                const path = createPath(currentAngle, currentAngle + sliceAngle);
+                currentAngle += sliceAngle;
+                
+                return (
+                  <Path
+                    key={`slice-${index}`}
+                    d={path}
+                    fill={item.color}
+                    stroke="#ffffff"
+                    strokeWidth={3}
+                    opacity={0.95}
+                  />
+                );
+              })}
+            </G>
+          </Svg>
+        </Animated.View>
         
-        {/* Center content */}
-        <View style={[styles.centerContent, {
-          width: innerRadius * 1.8,
-          height: innerRadius * 1.8,
-          borderRadius: innerRadius * 0.9,
-          top: centerY - innerRadius * 0.9,
-          left: centerX - innerRadius * 0.9,
-        }]}>
-          <Text style={styles.centerText}>{centerText}</Text>
-          <Text style={styles.centerValue}>{centerValue || `₹${total.toLocaleString()}`}</Text>
-        </View>
+        {/* Animated Center content */}
+        <Animated.View 
+          style={[
+            styles.centerContent, 
+            {
+              width: innerRadius * 1.8,
+              height: innerRadius * 1.8,
+              borderRadius: innerRadius * 0.9,
+              top: centerY - innerRadius * 0.9,
+              left: centerX - innerRadius * 0.9,
+              opacity: fadeAnim,
+              transform: [{ scale: fadeAnim }],
+            }
+          ]}
+        >
+          <Text style={styles.centerText}>Expenses Graph</Text>
+        </Animated.View>
       </View>
       
-      {/* Legend */}
+      {/* Animated Legend */}
       <View style={styles.legend}>
         {data
           .filter(item => item.percentage >= 1)
           .map((item, index) => (
-            <View key={`legend-${index}`} style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+            <Animated.View
+              key={`legend-${index}`}
+              style={[
+                styles.legendItem,
+                {
+                  opacity: legendAnimValues[index] || 1,
+                  transform: [
+                    {
+                      translateX: legendAnimValues[index]
+                        ? legendAnimValues[index].interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [50, 0],
+                          })
+                        : 0,
+                    },
+                    {
+                      scale: legendAnimValues[index] || 1,
+                    },
+                  ],
+                },
+              ]}
+            >
+              <Animated.View 
+                style={[
+                  styles.legendDot, 
+                  { 
+                    backgroundColor: item.color,
+                    transform: [
+                      {
+                        scale: legendAnimValues[index]
+                          ? legendAnimValues[index].interpolate({
+                              inputRange: [0, 0.5, 1],
+                              outputRange: [0, 1.3, 1],
+                            })
+                          : 1,
+                      },
+                    ],
+                  }
+                ]} 
+              />
               <View style={styles.legendTextContainer}>
                 <Text style={styles.legendCategory}>{item.category}</Text>
                 <Text style={styles.legendAmount}>₹{item.total.toLocaleString()}</Text>
               </View>
               <Text style={styles.legendPercentage}>{item.percentage}%</Text>
-            </View>
+            </Animated.View>
           ))}
       </View>
     </View>
@@ -138,6 +251,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 30,
+  },
+  chartWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   centerContent: {
     position: 'absolute',
