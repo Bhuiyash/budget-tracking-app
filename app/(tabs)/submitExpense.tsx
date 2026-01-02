@@ -1,8 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -20,6 +23,7 @@ export default function HomeScreen() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   const categories = [
     { id: "Transport", label: "🚗 Transport", icon: "🚗" },
@@ -123,25 +127,22 @@ export default function HomeScreen() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>🏷️ Category</Text>
-            <View style={styles.categoryContainer}>
-              {categories.map((cat) => (
-                <TouchableOpacity
-                  key={cat.id}
-                  style={[
-                    styles.categoryOption,
-                    category === cat.id && styles.categorySelected,
-                  ]}
-                  onPress={() => setCategory(cat.id)}
-                >
-                  <View style={styles.radioButton}>
-                    {category === cat.id && (
-                      <View style={styles.radioSelected} />
-                    )}
-                  </View>
-                  <Text style={styles.categoryText}>{cat.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <TouchableOpacity
+              style={styles.selectButton}
+              onPress={() => setShowCategoryModal(true)}
+            >
+              <Text style={[styles.selectText, !category && styles.placeholderText]}>
+                {category ? 
+                  categories.find(cat => cat.id === category)?.label || 'Select Category' 
+                  : 'Select a category'
+                }
+              </Text>
+              <Ionicons 
+                name="chevron-down" 
+                size={20} 
+                color={category ? "#3b82f6" : "#9ca3af"} 
+              />
+            </TouchableOpacity>
           </View>
 
           {loading ? (
@@ -163,6 +164,50 @@ export default function HomeScreen() {
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Category Selection Modal */}
+        <Modal
+          visible={showCategoryModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowCategoryModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Select Category</Text>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setShowCategoryModal(false)}
+                >
+                  <Ionicons name="close" size={24} color="#6b7280" />
+                </TouchableOpacity>
+              </View>
+              
+              <FlatList
+                data={categories}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={[
+                      styles.modalOption,
+                      category === item.id && styles.modalOptionSelected
+                    ]}
+                    onPress={() => {
+                      setCategory(item.id);
+                      setShowCategoryModal(false);
+                    }}
+                  >
+                    <Text style={styles.modalOptionText}>{item.label}</Text>
+                    {category === item.id && (
+                      <Ionicons name="checkmark" size={20} color="#3b82f6" />
+                    )}
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </View>
+        </Modal>
       </View>
     </ScrollView>
   );
@@ -270,6 +315,90 @@ const styles = StyleSheet.create({
   },
   categoryContainer: {
     gap: 14,
+  },
+  // Select dropdown styles
+  selectButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 2,
+    borderColor: "#e2e8f0",
+    padding: 18,
+    borderRadius: 16,
+    backgroundColor: "#f8fafc",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  selectText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#1e293b",
+    flex: 1,
+  },
+  placeholderText: {
+    color: "#9ca3af",
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    maxHeight: "70%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1e293b",
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#f3f4f6",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+  modalOptionSelected: {
+    backgroundColor: "#dbeafe",
+    borderColor: "#3b82f6",
+  },
+  modalOptionText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#1e293b",
   },
   categoryOption: {
     flexDirection: "row",
