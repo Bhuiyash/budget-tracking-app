@@ -4,31 +4,31 @@
     "slug": "budget-tracker-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/budgetTrackerIcon.png",
     "scheme": "budgettrackerapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "android": {
       "package": "com.bhuiyash.budgettrackerapp",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/budgetTrackerIcon.png",
         "backgroundColor": "#3b82f6"
       },
       "edgeToEdgeEnabled": true,
-      "icon": "./assets/images/icon.png"
+      "icon": "./assets/images/budgetTrackerIcon.png"
     },
     "ios": {
       "supportsTablet": true
     },
     "web": {
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/budgetTrackerIcon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/budgetTrackerIcon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
