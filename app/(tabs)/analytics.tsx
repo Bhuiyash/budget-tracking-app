@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
 import { sheet_api_url } from "../constants/api";
 
@@ -15,6 +15,7 @@ type ExpenseItem = {
   date: string;
   expense: string;
   amount: string | number;
+  category?: string;
 };
 
 type CategoryData = {
@@ -40,9 +41,15 @@ export default function AnalyticsScreen() {
     "#FF9F40",
   ];
 
-  // Simple category classification
-  const categorizeExpense = (expense: string): string => {
-    const lowerExpense = expense.toLowerCase();
+  // Get category from expense item or fallback to text-based classification
+  const getExpenseCategory = (expenseItem: ExpenseItem): string => {
+    // Use actual category field if available
+    if (expenseItem.category && expenseItem.category.trim()) {
+      return expenseItem.category;
+    }
+    
+    // Fallback to text-based categorization for older records without category
+    const lowerExpense = expenseItem.expense.toLowerCase();
     if (
       lowerExpense.includes("food") ||
       lowerExpense.includes("swiggy") ||
@@ -51,6 +58,14 @@ export default function AnalyticsScreen() {
       lowerExpense.includes("lunch")
     )
       return "Food";
+    if (
+      lowerExpense.includes("milk") ||
+      lowerExpense.includes("bread") ||
+      lowerExpense.includes("groceries") ||
+      lowerExpense.includes("vegetables") ||
+      lowerExpense.includes("fruits")
+    )
+      return "Grocery";
     if (
       lowerExpense.includes("transport") ||
       lowerExpense.includes("uber") ||
@@ -113,16 +128,31 @@ export default function AnalyticsScreen() {
       const avgExpense = total / expenseCount;
       insights.push(`📊 Your average expense is ₹${avgExpense.toFixed(0)}`);
 
+      // Show top 3 categories if available
+      if (data.length >= 3) {
+        const top3 = data.slice(0, 3);
+        const top3Percentage = top3.reduce((sum, cat) => sum + cat.percentage, 0);
+        insights.push(
+          `🏆 Top 3 categories: ${top3.map(cat => cat.category).join(', ')} account for ${top3Percentage}% of spending`
+        );
+      }
+
       if (topCategory.percentage > 50) {
         insights.push(
           `⚠️ Consider diversifying your spending - ${topCategory.category} takes more than half your budget`
         );
       }
 
-      const monthsTotal=getCurrentMonthTotal(expenses);
+      const monthsTotal = getCurrentMonthTotal(expenses);
 
       insights.push(
         `📅 This month's total: ₹${monthsTotal.toLocaleString()}`
+      );
+
+      // Compare with previous periods
+      const categoriesWithData = data.filter(cat => cat.total > 0).length;
+      insights.push(
+        `📈 You're spending across ${categoriesWithData} different categories`
       );
 
       if (monthsTotal > 15000) {
@@ -131,6 +161,22 @@ export default function AnalyticsScreen() {
         );
       } else if (monthsTotal < 5000) {
         insights.push(`✅ Great job staying within budget this month!`);
+      }
+
+      // Category-specific insights
+      const foodExpense = data.find(cat => 
+        cat.category.toLowerCase().includes('food') || 
+        cat.category.toLowerCase().includes('grocery')
+      );
+      if (foodExpense && foodExpense.percentage > 30) {
+        insights.push(`🍔 Food expenses are ${foodExpense.percentage}% of your budget - consider meal planning`);
+      }
+
+      const transportExpense = data.find(cat => 
+        cat.category.toLowerCase().includes('transport')
+      );
+      if (transportExpense && transportExpense.percentage > 20) {
+        insights.push(`🚗 Transport costs ${transportExpense.percentage}% of budget - consider carpooling or public transport`);
       }
     }
 
@@ -153,7 +199,7 @@ export default function AnalyticsScreen() {
       // Categorize expenses
       const categoryMap = new Map<string, number>();
       data.forEach((item: ExpenseItem) => {
-        const category = categorizeExpense(item.expense);
+        const category = getExpenseCategory(item);
         const amount = Number(item.amount) || 0;
         categoryMap.set(category, (categoryMap.get(category) || 0) + amount);
       });

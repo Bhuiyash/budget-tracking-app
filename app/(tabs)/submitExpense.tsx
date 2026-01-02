@@ -22,14 +22,16 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
 
   const categories = [
-    { id: "transport", label: "🚗 Transport", icon: "🚗" },
-    { id: "grocery", label: "🛒 Grocery", icon: "🛒" },
-    { id: "food", label: "🍔 Food", icon: "🍔" },
-    { id: "entertainment", label: "🎉 Entertainment", icon: "🎉" },
-    { id: "travel", label: "✈️ Travel", icon: "✈️" },
-    { id: "rent", label: "🏠 Rent", icon: "🏠" },
-    { id: "online Shopping", label: "🛍️ Online Shopping", icon: "🛍️" },
-    { id: "miscellaneous", label: "📦 Miscellaneous", icon: "📦" },
+    { id: "Transport", label: "🚗 Transport", icon: "🚗" },
+    { id: "Grocery", label: "🛒 Grocery", icon: "🛒" },
+    { id: "Food", label: "🍔 Food", icon: "🍔" },
+    { id: "Entertainment", label: "🎉 Entertainment", icon: "🎉" },
+    { id: "Travel", label: "✈️ Travel", icon: "✈️" },
+    { id: "Rent", label: "🏠 Rent", icon: "🏠" },
+    { id: "Online Shopping", label: "🛍️ Online Shopping", icon: "🛍️" },
+    { id: "Miscellaneous", label: "📦 Miscellaneous", icon: "📦" },
+    { id: "Health", label: "💊 Health", icon: "💊" },
+    { id: "Maintenance", label: "🛠️ Maintenance", icon: "🛠️" },
   ];
 
   const handleSubmit = async () => {
