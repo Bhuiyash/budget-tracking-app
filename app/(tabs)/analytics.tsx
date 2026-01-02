@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Dimensions,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
+import PieChart, { PieChartData } from "../../components/PieChart";
 import { sheet_api_url } from "../constants/api";
 
 const { width } = Dimensions.get("window");
@@ -25,11 +26,14 @@ type CategoryData = {
   color: string;
 };
 
+// Update CategoryData to match PieChartData interface
+type AnalyticsCategoryData = PieChartData;
+
 export default function AnalyticsScreen() {
   const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalExpense, setTotalExpense] = useState(0);
-  const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
+  const [categoryData, setCategoryData] = useState<PieChartData[]>([]);
   const [insights, setInsights] = useState<string[]>([]);
 
   const colors = [
@@ -112,7 +116,7 @@ export default function AnalyticsScreen() {
   };
 
   const generateInsights = (
-    data: CategoryData[],
+    data: PieChartData[],
     total: number,
     expenseCount: number,
     expenses: ExpenseItem[]
@@ -205,7 +209,7 @@ export default function AnalyticsScreen() {
       });
 
       // Convert to array and calculate percentages
-      const categoryArray: CategoryData[] = Array.from(categoryMap.entries())
+      const categoryArray: PieChartData[] = Array.from(categoryMap.entries())
         .map(([category, amount], index) => ({
           category,
           total: amount,
@@ -255,24 +259,14 @@ export default function AnalyticsScreen() {
         </Text>
       </View>
 
-      {/* Simple Pie Chart */}
+      {/* Enhanced Pie Chart */}
       <View style={styles.chartCard}>
         <Text style={styles.chartTitle}>Spending by Category</Text>
-        <View style={styles.pieChart}>
-          {categoryData.map((item, index) => (
-            <View key={item.category} style={styles.pieSlice}>
-              <View
-                style={[styles.colorBox, { backgroundColor: item.color }]}
-              />
-              <View style={styles.categoryInfo}>
-                <Text style={styles.categoryName}>{item.category}</Text>
-                <Text style={styles.categoryAmount}>
-                  ₹{item.total} ({item.percentage}%)
-                </Text>
-              </View>
-            </View>
-          ))}
-        </View>
+        <PieChart 
+          data={categoryData} 
+          centerText="Total Expenses"
+          centerValue={`₹${totalExpense.toLocaleString()}`}
+        />
       </View>
 
       {/* AI Insights */}
@@ -362,40 +356,24 @@ const styles = StyleSheet.create({
   },
   chartCard: {
     backgroundColor: "white",
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 16,
+    padding: 24,
     marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   chartTitle: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 16,
     color: "#2c3e50",
-  },
-  pieChart: {
-    gap: 12,
-  },
-  pieSlice: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  colorBox: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-  },
-  categoryInfo: {
-    flex: 1,
-  },
-  categoryName: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#2c3e50",
-  },
-  categoryAmount: {
-    fontSize: 14,
-    color: "#7f8c8d",
+    textAlign: "center",
   },
   insightsCard: {
     backgroundColor: "white",
