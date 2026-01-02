@@ -40,36 +40,6 @@ export default function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
 
   const menuItems = [
     {
-      id: 'settings',
-      title: 'Settings',
-      icon: 'settings-outline',
-      description: 'App preferences and configuration',
-      onPress: () => {
-        onClose();
-        Alert.alert('Settings', 'Settings page coming soon!');
-      },
-    },
-    {
-      id: 'export',
-      title: 'Export Data',
-      icon: 'download-outline',
-      description: 'Download your expense data',
-      onPress: () => {
-        onClose();
-        Alert.alert('Export', 'Export functionality coming soon!');
-      },
-    },
-    {
-      id: 'backup',
-      title: 'Backup & Sync',
-      icon: 'cloud-upload-outline',
-      description: 'Backup your data to cloud',
-      onPress: () => {
-        onClose();
-        Alert.alert('Backup', 'Cloud backup coming soon!');
-      },
-    },
-    {
       id: 'categories',
       title: 'Manage Categories',
       icon: 'list-outline',
@@ -79,16 +49,7 @@ export default function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
         Alert.alert('Categories', 'Category management coming soon!');
       },
     },
-    {
-      id: 'reports',
-      title: 'Reports',
-      icon: 'bar-chart-outline',
-      description: 'Detailed expense reports',
-      onPress: () => {
-        onClose();
-        Alert.alert('Reports', 'Advanced reporting coming soon!');
-      },
-    },
+    
     {
       id: 'about',
       title: 'About',
@@ -98,7 +59,7 @@ export default function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
         onClose();
         Alert.alert(
           'About Budget Tracker',
-          'Version 1.5.3\n\nA modern expense tracking app built with React Native and Expo.\n\nDeveloped by Bhuiyash Kumar\n\nFeatures:\n• Track daily expenses\n• Categorize spending\n• View analytics and insights\n• Export data\n\n© 2026 Budget Tracker'
+          'Version 1.7\n\nA modern expense tracking app built with React Native and Expo.\n\nDeveloped by Bhuiyash Kumar\n\nFeatures:\n• Track daily expenses\n• Categorize spending\n• View analytics and insights\n• Export data\n\n© 2026 Budget Tracker'
         );
       },
     },
