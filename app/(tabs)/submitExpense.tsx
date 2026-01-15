@@ -36,6 +36,7 @@ export default function HomeScreen() {
     { id: "Miscellaneous", label: "📦 Miscellaneous", icon: "📦" },
     { id: "Health", label: "💊 Health", icon: "💊" },
     { id: "Maintenance", label: "🛠️ Maintenance", icon: "🛠️" },
+    { id: "Bill Payments", label: "🧾 Bill Payments", icon: "🧾" }
   ];
 
   const handleSubmit = async () => {
