@@ -1,0 +1,506 @@
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from "@react-native-community/datetimepicker";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { sheet_api_url } from "../constants/api";
+
+export default function HomeScreen() {
+  const [date, setDate] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
+  const [expense, setExpense] = useState("");
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+
+  const categories = [
+    { id: "Transport", label: "🚗 Transport", icon: "🚗" },
+    { id: "Grocery", label: "🛒 Grocery", icon: "🛒" },
+    { id: "Food", label: "🍔 Food", icon: "🍔" },
+    { id: "Entertainment", label: "🎉 Entertainment", icon: "🎉" },
+    { id: "Travel", label: "✈️ Travel", icon: "✈️" },
+    { id: "Rent", label: "🏠 Rent", icon: "🏠" },
+    { id: "Online Shopping", label: "🛍️ Online Shopping", icon: "🛍️" },
+    { id: "Miscellaneous", label: "📦 Miscellaneous", icon: "📦" },
+    { id: "Health", label: "💊 Health", icon: "💊" },
+    { id: "Maintenance", label: "🛠️ Maintenance", icon: "🛠️" },
+  ];
+
+  const handleSubmit = async () => {
+    if (!expense || !amount || !category || isNaN(Number(amount))) {
+      Alert.alert(
+        "Validation Error",
+        "Please fill all fields with valid data."
+      );
+      return;
+    }
+
+    const formattedDate = date.toISOString().split("T")[0];
+    setLoading(true);
+    const expenseObj = {
+      date: formattedDate,
+      expense: expense.trim(),
+      amount: amount.trim(),
+      category: category,
+    };
+
+    try {
+      const res = await fetch(sheet_api_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(expenseObj),
+      });
+
+      setLoading(false);
+      setAmount("");
+      setExpense("");
+      setCategory("");
+      Alert.alert("Success", "Expense saved to your Google Sheet!");
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
+      Alert.alert("Error", "Failed to save expense.");
+    }
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.scroll}>
+      <View style={styles.container}>
+        <View style={styles.formContainer}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>📅 Select Date</Text>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowPicker(true)}
+            >
+              <Text style={styles.dateButtonText}>{date.toDateString()}</Text>
+            </TouchableOpacity>
+            {showPicker && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={(event, selectedDate) => {
+                  setShowPicker(false);
+                  if (selectedDate) setDate(selectedDate);
+                }}
+              />
+            )}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>📝 Expense</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Lunch at restaurant"
+              value={expense}
+              onChangeText={setExpense}
+              placeholderTextColor="#999"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>💰 Amount (₹)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. 500"
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="numeric"
+              placeholderTextColor="#999"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>🏷️ Category</Text>
+            <TouchableOpacity
+              style={styles.selectButton}
+              onPress={() => setShowCategoryModal(true)}
+            >
+              <Text style={[styles.selectText, !category && styles.placeholderText]}>
+                {category ? 
+                  categories.find(cat => cat.id === category)?.label || 'Select Category' 
+                  : 'Select a category'
+                }
+              </Text>
+              <Ionicons 
+                name="chevron-down" 
+                size={20} 
+                color={category ? "#3b82f6" : "#9ca3af"} 
+              />
+            </TouchableOpacity>
+          </View>
+
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#007AFF" />
+              <Text style={styles.loadingText}>Saving expense...</Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={[
+                styles.submitButton,
+                (!expense || !amount || !category) &&
+                  styles.submitButtonDisabled,
+              ]}
+              onPress={handleSubmit}
+              disabled={loading || !expense || !amount || !category}
+            >
+              <Text style={styles.submitButtonText}> Submit </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Category Selection Modal */}
+        <Modal
+          visible={showCategoryModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowCategoryModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Select Category</Text>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setShowCategoryModal(false)}
+                >
+                  <Ionicons name="close" size={24} color="#6b7280" />
+                </TouchableOpacity>
+              </View>
+              
+              <FlatList
+                data={categories}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={[
+                      styles.modalOption,
+                      category === item.id && styles.modalOptionSelected
+                    ]}
+                    onPress={() => {
+                      setCategory(item.id);
+                      setShowCategoryModal(false);
+                    }}
+                  >
+                    <Text style={styles.modalOptionText}>{item.label}</Text>
+                    {category === item.id && (
+                      <Ionicons name="checkmark" size={20} color="#3b82f6" />
+                    )}
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </View>
+        </Modal>
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  scroll: {
+    flexGrow: 1,
+    backgroundColor: "#0f172a",
+  },
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  headerContainer: {
+    alignItems: "center",
+    marginBottom: 40,
+    paddingTop: 30,
+  },
+  headerText: {
+    alignItems: "center",
+    marginTop: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#ffffff",
+    marginBottom: 8,
+    textShadowColor: "rgba(59, 130, 246, 0.5)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10,
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#94a3b8",
+    fontWeight: "500",
+    letterSpacing: 0.5,
+    textAlign: "center",
+  },
+  formContainer: {
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    borderRadius: 24,
+    padding: 28,
+    shadowColor: "#3b82f6",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 15,
+    borderWidth: 1,
+    borderColor: "rgba(59, 130, 246, 0.2)",
+  },
+  inputGroup: {
+    marginBottom: 26,
+  },
+  label: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#1e293b",
+    marginBottom: 14,
+    letterSpacing: 0.3,
+  },
+  input: {
+    borderWidth: 2,
+    borderColor: "#e2e8f0",
+    padding: 18,
+    borderRadius: 16,
+    backgroundColor: "#f8fafc",
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#1e293b",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  dateButton: {
+    backgroundColor: "#6366f1",
+    padding: 18,
+    borderRadius: 16,
+    alignItems: "center",
+    shadowColor: "#6366f1",
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  dateButtonText: {
+    color: "white",
+    fontSize: 17,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+  categoryContainer: {
+    gap: 14,
+  },
+  // Select dropdown styles
+  selectButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 2,
+    borderColor: "#e2e8f0",
+    padding: 18,
+    borderRadius: 16,
+    backgroundColor: "#f8fafc",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  selectText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#1e293b",
+    flex: 1,
+  },
+  placeholderText: {
+    color: "#9ca3af",
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    maxHeight: "70%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1e293b",
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#f3f4f6",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+  modalOptionSelected: {
+    backgroundColor: "#dbeafe",
+    borderColor: "#3b82f6",
+  },
+  modalOptionText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#1e293b",
+  },
+  categoryOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 18,
+    backgroundColor: "#f1f5f9",
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: "transparent",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  categorySelected: {
+    backgroundColor: "#dbeafe",
+    borderColor: "#3b82f6",
+    shadowColor: "#3b82f6",
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+    transform: [{ scale: 1.02 }],
+  },
+  radioButton: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#94a3b8",
+    marginRight: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "white",
+  },
+  radioSelected: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#3b82f6",
+    shadowColor: "#3b82f6",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  categoryText: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: "#374151",
+    letterSpacing: 0.2,
+  },
+  loadingContainer: {
+    alignItems: "center",
+    paddingVertical: 24,
+    backgroundColor: "#f8fafc",
+    borderRadius: 16,
+    marginTop: 10,
+  },
+  loadingText: {
+    marginTop: 14,
+    fontSize: 17,
+    color: "#64748b",
+    fontWeight: "600",
+    letterSpacing: 0.3,
+  },
+  submitButton: {
+    backgroundColor: "#10b981",
+    padding: 20,
+    borderRadius: 18,
+    alignItems: "center",
+    shadowColor: "#10b981",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    marginTop: 10,
+  },
+  submitButtonDisabled: {
+    backgroundColor: "#9ca3af",
+    shadowOpacity: 0,
+    elevation: 0,
+    borderColor: "transparent",
+  },
+  submitButtonText: {
+    color: "white",
+    fontSize: 19,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+});
