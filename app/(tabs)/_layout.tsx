@@ -39,7 +39,6 @@ function CustomHeader() {
 }
 
 export default function TabLayout() {
-  //test commit on main
   return (
     <Tabs
       screenOptions={{
