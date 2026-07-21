@@ -1,4 +1,4 @@
 import { Redirect } from "expo-router";
 export default function Index(){
-    return <Redirect href="/submitExpense"></Redirect>
+    return <Redirect href="/dashboard"></Redirect>
 }

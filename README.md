@@ -58,10 +58,11 @@ Who has access: Anyone --very important
 
 Click Deploy and copy the Web App URL 
 
-create a file named api.ts inside the contants folder
-
-add this: 
-export const sheet_api_url="your google sheet api url";
+Copy `.env.example` to `.env` and set your Web App URL:
+```
+EXPO_PUBLIC_SHEET_API_URL=your google sheet api url
+```
+`.env` is gitignored — never commit your real URL. If this deployment URL is ever exposed publicly (e.g. pushed to a repo), redeploy the Apps Script as a **new** deployment to get a fresh URL and update `.env`.
 
 ```bash
 git clone https://github.com/your-username/budget-tracker-app.git
