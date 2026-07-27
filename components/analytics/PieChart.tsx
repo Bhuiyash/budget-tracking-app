@@ -18,6 +18,7 @@ export interface PieChartData {
   total: number;
   percentage: number;
   color: string;
+  icon?: string; // Ionicons name override — for datasets not backed by constants/categories.ts
 }
 
 interface PieChartProps {
@@ -170,7 +171,7 @@ export default function PieChart({
 
       <View style={styles.legend}>
         {visibleLegendData.map((item, index) => {
-          const meta = getCategoryMeta(item.category);
+          const icon = item.icon ?? getCategoryMeta(item.category).icon;
           return (
             <Animated.View
               key={item.category}
@@ -178,7 +179,7 @@ export default function PieChart({
               style={styles.legendItem}
             >
               <View style={[styles.legendIconChip, { backgroundColor: `${item.color}26` }]}>
-                <Ionicons name={meta.icon as any} size={16} color={item.color} />
+                <Ionicons name={icon as any} size={16} color={item.color} />
               </View>
               <View style={styles.legendTextContainer}>
                 <Text style={styles.legendCategory} numberOfLines={1}>

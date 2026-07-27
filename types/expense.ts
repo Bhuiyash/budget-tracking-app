@@ -13,6 +13,8 @@ export type CategoryId =
   | "Maintenance"
   | "Bill Payments"
   | "Miscellaneous"
+  | "ICICI Coral"
+  | "Amazon Pay ICICI"
   | "Others";
 
 export interface Expense {

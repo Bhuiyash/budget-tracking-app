@@ -24,6 +24,8 @@ export const CATEGORIES: CategoryMeta[] = [
   { id: "Maintenance", label: "Maintenance", icon: "construct-outline", color: "#94A3B8" },
   { id: "Bill Payments", label: "Bill Payments", icon: "receipt-outline", color: "#FB7185" },
   { id: "Miscellaneous", label: "Miscellaneous", icon: "cube-outline", color: "#C084FC" },
+  { id: "ICICI Coral", label: "ICICI Coral", icon: "card-outline", color: "#FF6F61" },
+  { id: "Amazon Pay ICICI", label: "Amazon Pay ICICI", icon: "card-outline", color: "#00A8E8" },
 ];
 
 const FALLBACK: CategoryMeta = {
